@@ -177,6 +177,7 @@ function UploadForm() {
 
       // Upload each file
       const updatedFiles = [...files];
+      let successCount = 0;
       for (let i = 0; i < files.length; i++) {
         const { file } = files[i];
         const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
@@ -231,21 +232,17 @@ function UploadForm() {
           continue;
         }
 
-        // Step 3: increment photoCount (non-critical, best effort)
-        try {
-          const { data: proj } = await client.models.Project.get({ id: projectId });
-          if (proj) {
-            await client.models.Project.update({
-              id: projectId,
-              photoCount: (proj.photoCount ?? 0) + 1,
-            });
-          }
-        } catch {
-          // Non-critical — photo is saved; counter may be off
-        }
-
         updatedFiles[i] = { ...updatedFiles[i], progress: 100, status: "done" };
         setFiles([...updatedFiles]);
+        successCount++;
+      }
+
+      // Update photoCount once after all uploads (best effort)
+      if (successCount > 0) {
+        client.models.Project.update({
+          id: projectId,
+          photoCount: successCount,
+        }).catch(() => { /* non-critical */ });
       }
 
       const allDone = updatedFiles.every((f) => f.status === "done");
