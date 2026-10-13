@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Public-facing UI: global layout/nav, homepage with hero+category filter+project grid, and project detail page with photo lightbox. Depends on FEAT-001 for the Schema types and AmplifyProvider. Independent of FEAT-003 (upload/admin). All styling via CSS Modules. Palette: bg #F8F7F4, text #1A1A1A, accent #C8956C.",
+  "status": "completed",
+  "steps": [
+    "Replace app/globals.css with the project's base reset and CSS custom properties: --color-bg: #F8F7F4; --color-text: #1A1A1A; --color-accent: #C8956C; --color-accent-light: #E8C4A8; --font-sans: Inter, system-ui, sans-serif; base box-sizing, body background/color/font, link reset, img max-width:100%.",
+    "Delete app/app.css (it contains Todo-specific full-viewport centering that conflicts with the portfolio layout) and remove its import from app/page.tsx and app/layout.tsx.",
+    "Update app/layout.tsx: wrap children with AmplifyProvider; add the NavBar component; set metadata title to 'WinniePro Remodeling' and description to 'Professional remodeling portfolio'; import globals.css.",
+    "Create app/components/NavBar.tsx and app/components/NavBar.module.css: sticky top nav with logo text 'WinniePro Remodeling' (links to '/') on the left and nav links ('Our Work' → '/', 'Upload' → '/upload', 'Admin' → '/admin') on the right. Hamburger menu on mobile (toggle state with useState). Responsive: links hidden on <768px, hamburger shown; links shown on ≥768px. Use accent color for active/hover underline.",
+    "Replace app/page.tsx: hero section (full-width banner with headline 'Transforming Spaces, One Room at a Time', subheading, CTA button linking to '#projects'); category filter bar (buttons for All | Bathroom | Kitchen | Living Room | Bedroom | Exterior | Other — state-managed active filter); responsive project grid (2 columns mobile, 3 columns ≥768px, 4 columns ≥1280px). Fetch projects via client.models.Project.list() with observeQuery. For each project fetch its cover photo (first Photo by order) to display as card image via getUrl. Show loading skeleton cards while fetching. Show 'No projects yet' empty state.",
+    "Create app/components/ProjectCard.tsx and app/components/ProjectCard.module.css: card with cover image (Next.js <Image> with fill layout inside a fixed-aspect wrapper), customer name, category badge (colored pill using accent tones), hover scale+shadow transition. Clicking navigates to '/projects/[id]'.",
+    "Create app/components/CategoryBadge.tsx and app/components/CategoryBadge.module.css: small pill badge that maps each Category enum value to a display label (Bathroom, Kitchen, Living Room, Bedroom, Exterior, Other) and a background color variant.",
+    "Create app/projects/[id]/page.tsx and app/projects/[id]/page.module.css: 'use client' page. Fetch project by id via client.models.Project.get(). Fetch all photos for the project via client.models.Photo.list({ filter: { projectId: { eq: id } } }) sorted by order. Display project header (customer name, address if set, category badge, description if set). Below, a responsive photo grid (2-col mobile, 3-col desktop). Clicking a photo opens a lightbox.",
+    "Create app/components/Lightbox.tsx and app/components/Lightbox.module.css: modal overlay with the current full-res photo (via getUrl), prev/next arrows (keyboard left/right also work), close button (Escape key also works), photo index indicator (e.g. '3 / 12'). Trap focus inside modal for accessibility. Animate open/close with a CSS opacity transition.",
+    "Update next.config.js to add the Amplify S3 image hostname to images.remotePatterns so Next.js <Image> can load S3 URLs. Pattern: protocol 'https', hostname '**.amazonaws.com'. This is needed for the cover photo and lightbox images."
+  ],
+  "acceptance_criteria": [
+    "npm run build completes without errors",
+    "npm run lint reports 0 errors",
+    "app/page.tsx renders a hero, category filter, and project grid section (no Todo content)",
+    "app/projects/[id]/page.tsx exists and renders project info + photo grid + lightbox component",
+    "NavBar renders logo on left and nav links on right; hamburger appears only on mobile (verified by CSS media query in NavBar.module.css)",
+    "next.config.js contains amazonaws.com in remotePatterns"
+  ],
+  "verification": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": "All 9 steps implemented. globals.css replaced with CSS custom properties palette. app.css deleted. layout.tsx updated with NavBar and globals.css import. NavBar with hamburger/responsive nav created. Homepage replaced with hero + category filter + project grid (observeQuery). ProjectCard with cover photo fetch via getUrl and Next.js Image. CategoryBadge with per-category color pills. Project detail page /projects/[id] with photo grid and Lightbox. Lightbox with keyboard nav and focus trap. next.config.js updated with amazonaws.com remotePattern. npm run lint: 0 errors. npm run build: success."
+}

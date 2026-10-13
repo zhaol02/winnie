@@ -1,0 +1,151 @@
+.main {
+  padding: 2rem 0 4rem;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+.header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(26, 26, 26, 0.1);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.customerName {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.address {
+  font-size: 0.95rem;
+  color: rgba(26, 26, 26, 0.55);
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(26, 26, 26, 0.75);
+  max-width: 720px;
+  margin-bottom: 0.5rem;
+}
+
+.photoCount {
+  font-size: 0.85rem;
+  color: rgba(26, 26, 26, 0.4);
+}
+
+/* ─── Loading skeleton ──────────────────────────────────────────────────── */
+.loadingHeader {
+  height: 60px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e8e5e0 25%, #f0ede9 50%, #e8e5e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  margin-bottom: 2rem;
+  max-width: 320px;
+}
+
+.skeleton {
+  border-radius: 8px;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(90deg, #e8e5e0 25%, #f0ede9 50%, #e8e5e0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Photo grid ────────────────────────────────────────────────────────── */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.photoBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.photoBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.photoWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: #e8e5e0;
+  border-radius: 8px;
+}
+
+.photo {
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.photoBtn:hover .photo {
+  transform: scale(1.04);
+}
+
+.photoPlaceholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: linear-gradient(135deg, #e8e5e0 0%, #d0cdc8 100%);
+  border-radius: 8px;
+}
+
+.caption {
+  font-size: 0.78rem;
+  color: rgba(26, 26, 26, 0.55);
+  padding: 0.35rem 0.1rem 0;
+  line-height: 1.4;
+}
+
+.noPhotos,
+.notFound {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: rgba(26, 26, 26, 0.5);
+  font-size: 1.1rem;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .photoGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .photoGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

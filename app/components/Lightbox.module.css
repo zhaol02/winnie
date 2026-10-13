@@ -1,0 +1,113 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Top toolbar */
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+}
+
+.counter {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.closeBtn:hover,
+.closeBtn:focus-visible {
+  background-color: rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+
+/* Main image */
+.imageWrapper {
+  position: relative;
+  width: min(90vw, 1100px);
+  height: min(80vh, 800px);
+}
+
+.image {
+  object-fit: contain;
+}
+
+/* Arrow buttons */
+.arrowBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: #fff;
+  font-size: 2.5rem;
+  line-height: 1;
+  width: 48px;
+  height: 64px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.arrowBtn:disabled {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.arrowBtn:not(:disabled):hover,
+.arrowBtn:not(:disabled):focus-visible {
+  background-color: rgba(255, 255, 255, 0.25);
+  outline: none;
+}
+
+.arrowLeft {
+  left: 0.5rem;
+}
+
+.arrowRight {
+  right: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .arrowLeft {
+    left: 1.5rem;
+  }
+
+  .arrowRight {
+    right: 1.5rem;
+  }
+}
