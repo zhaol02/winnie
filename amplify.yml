@@ -9,6 +9,7 @@ frontend:
   phases:
     build:
       commands:
+        - cp amplify_outputs.json public/amplify_outputs.json
         - npm run build
   artifacts:
     baseDirectory: .next
