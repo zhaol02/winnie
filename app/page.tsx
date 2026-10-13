@@ -48,16 +48,20 @@ export default function HomePage() {
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>("ALL");
 
   useEffect(() => {
-    const sub = client.models.Project.observeQuery().subscribe({
-      next: ({ items }) => {
-        setProjects(items);
-        setLoading(false);
-      },
-      error: () => {
-        setLoading(false);
-      },
-    });
-    return () => sub.unsubscribe();
+    let cancelled = false;
+    async function load() {
+      try {
+        const { data } = await client.models.Project.list();
+        if (!cancelled) setProjects(data ?? []);
+      } catch (err) {
+        console.error("[Home] Project.list error:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered =
