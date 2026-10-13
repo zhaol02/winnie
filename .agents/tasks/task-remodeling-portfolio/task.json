@@ -1,0 +1,7 @@
+{
+  "task_id": "task-remodeling-portfolio",
+  "task_description": "Build a professional remodeling portfolio website on top of the existing Next.js 14 + Amplify Gen2 template. Adds Project/Photo data models, S3 storage, a public homepage with category filter and project grid, project detail page with lightbox, auth-gated upload page (mobile-first multi-image uploader), and an admin dashboard. CSS Modules only, no new UI libraries.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
