@@ -1,0 +1,8 @@
+{
+  "verdict": "CHANGES_REQUESTED",
+  "summary": "Both Pass 2 blockers are resolved: public pages now use apiKey auth mode and the admin N+1 is eliminated via a denormalized photoCount field. One new confirmed issue: ProjectCard.tsx makes its own Photo.list calls without authMode: 'apiKey', so cover photos will fail to load for unauthenticated visitors on the homepage.",
+  "changes_requested": [
+    "app/components/ProjectCard.tsx:12 — generateClient<Schema>() has no authMode override. Photo.list calls in this component use the userPool default, causing auth errors for unauthenticated visitors and blank cover photos on the homepage. Add { authMode: 'apiKey' } to match the fix already applied to app/page.tsx and app/projects/[id]/page.tsx."
+  ],
+  "reviewDoc": ".agents/tasks/task-remodeling-portfolio/2026-10-13-150518-review.md"
+}
