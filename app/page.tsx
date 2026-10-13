@@ -6,7 +6,9 @@ import type { Schema } from "@/amplify/data/resource";
 import ProjectCard from "@/app/components/ProjectCard";
 import styles from "./page.module.css";
 
-const client = generateClient<Schema>();
+// Public pages use apiKey auth mode so unauthenticated visitors can read
+// projects/photos (the schema grants allow.guest().to(['read']) via apiKey).
+const client = generateClient<Schema>({ authMode: "apiKey" });
 
 type Project = Schema["Project"]["type"];
 

@@ -34,19 +34,13 @@ function AdminDashboard() {
         return;
       }
 
-      // Fetch photo count for each project in parallel
-      const projectRows = await Promise.all(
-        projects.map(async (project) => {
-          try {
-            const { data: photos } = await client.models.Photo.list({
-              filter: { projectId: { eq: project.id } },
-            });
-            return { project, photoCount: photos?.length ?? 0 };
-          } catch {
-            return { project, photoCount: 0 };
-          }
-        })
-      );
+      // Use the denormalized photoCount field set by the upload page to avoid
+      // O(n) Photo.list queries. Falls back to 0 if the field is unset
+      // (e.g. projects created before this field was added).
+      const projectRows: ProjectRow[] = projects.map((project) => ({
+        project,
+        photoCount: project.photoCount ?? 0,
+      }));
 
       setRows(projectRows);
     } catch {

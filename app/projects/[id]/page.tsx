@@ -10,7 +10,9 @@ import CategoryBadge from "@/app/components/CategoryBadge";
 import Lightbox from "@/app/components/Lightbox";
 import styles from "./page.module.css";
 
-const client = generateClient<Schema>();
+// Public detail page uses apiKey auth mode so unauthenticated visitors can
+// read project/photo records (schema grants allow.guest().to(['read']) via apiKey).
+const client = generateClient<Schema>({ authMode: "apiKey" });
 
 type Project = Schema["Project"]["type"];
 type Photo = Schema["Photo"]["type"];

@@ -17,6 +17,9 @@ const schema = a.schema({
       category: a.ref("Category"),
       description: a.string(),
       photos: a.hasMany("Photo", "projectId"),
+      // Denormalized counter — incremented after each successful Photo.create
+      // in the upload page to avoid O(n) Photo.list queries in the admin dashboard.
+      photoCount: a.integer(),
     })
     .authorization((allow) => [
       allow.authenticated().to(["create", "update", "delete"]),

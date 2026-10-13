@@ -180,6 +180,21 @@ function UploadForm() {
             order: i,
           });
 
+          // Increment the denormalized photoCount on the Project so the
+          // admin dashboard can display counts without N+1 Photo.list queries.
+          try {
+            const { data: proj } = await client.models.Project.get({ id: projectId });
+            if (proj) {
+              await client.models.Project.update({
+                id: projectId,
+                photoCount: (proj.photoCount ?? 0) + 1,
+              });
+            }
+          } catch {
+            // Non-critical — the photo was uploaded; counter will be off but
+            // the admin page falls back gracefully.
+          }
+
           updatedFiles[i] = { ...updatedFiles[i], progress: 100, status: "done" };
           setFiles([...updatedFiles]);
         } catch (err) {
