@@ -143,9 +143,11 @@ function UploadForm() {
             category,
             description: description.trim() || undefined,
           });
+          console.log("[Upload] Project.create result:", JSON.stringify(result));
           newProject = result.data ?? undefined;
           errors = result.errors;
         } catch (err) {
+          console.error("[Upload] Project.create threw:", err);
           const msg = err instanceof Error ? err.message : String(err);
           setFormError(`Failed to create project: ${msg}`);
           setFiles((prev) => prev.map((f) => ({ ...f, status: "error" as UploadStatus, errorMessage: msg })));
@@ -155,16 +157,19 @@ function UploadForm() {
 
         if (errors?.length || !newProject) {
           const msg = errors?.map((e: { message: string }) => e.message).join(", ") ?? "Unknown error";
+          console.error("[Upload] Project.create failed — errors:", errors, "newProject:", newProject);
           setFormError(`Failed to create project: ${msg}`);
           setFiles((prev) => prev.map((f) => ({ ...f, status: "error" as UploadStatus, errorMessage: msg })));
           setUploading(false);
           return;
         }
         projectId = newProject.id;
+        console.log("[Upload] Project created, id:", projectId);
       }
 
       // Guard: never upload without a valid project
       if (!projectId) {
+        console.error("[Upload] No projectId after project create/select");
         setFormError("No project selected or created. Please try again.");
         setUploading(false);
         return;
@@ -210,6 +215,7 @@ function UploadForm() {
 
         // Step 2: save Photo record in DynamoDB
         try {
+          console.log("[Upload] Creating Photo record for", file.name, "projectId:", projectId);
           const { errors: photoErrors } = await client.models.Photo.create({
             projectId,
             s3Key: s3Path,
