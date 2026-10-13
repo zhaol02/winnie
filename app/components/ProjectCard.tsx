@@ -9,7 +9,7 @@ import type { Schema } from "@/amplify/data/resource";
 import CategoryBadge from "./CategoryBadge";
 import styles from "./ProjectCard.module.css";
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({ authMode: "apiKey" });
 
 type Project = Schema["Project"]["type"];
 
