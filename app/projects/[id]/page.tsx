@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { generateClient } from "aws-amplify/data";
@@ -10,9 +10,8 @@ import CategoryBadge from "@/app/components/CategoryBadge";
 import Lightbox from "@/app/components/Lightbox";
 import styles from "./page.module.css";
 
-// Public detail page uses apiKey auth mode so unauthenticated visitors can
-// read project/photo records (schema grants allow.guest().to(['read']) via apiKey).
-const client = generateClient<Schema>({ authMode: "apiKey" });
+// NOTE: client is created inside the component (not at module scope) so it
+// is instantiated after Amplify.configure() has run in AmplifyProvider.
 
 type Project = Schema["Project"]["type"];
 type Photo = Schema["Photo"]["type"];
@@ -23,6 +22,8 @@ interface PhotoWithUrl extends Photo {
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const clientRef = useRef(generateClient<Schema>({ authMode: "apiKey" }));
+  const client = clientRef.current;
   const [project, setProject] = useState<Project | null>(null);
   const [photos, setPhotos] = useState<PhotoWithUrl[]>([]);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { generateClient } from "aws-amplify/data";
@@ -9,7 +9,8 @@ import type { Schema } from "@/amplify/data/resource";
 import CategoryBadge from "./CategoryBadge";
 import styles from "./ProjectCard.module.css";
 
-const client = generateClient<Schema>({ authMode: "apiKey" });
+// NOTE: client is created inside the component (not at module scope) so it
+// is instantiated after Amplify.configure() has run in AmplifyProvider.
 
 type Project = Schema["Project"]["type"];
 
@@ -19,6 +20,8 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project }: ProjectCardProps) {
   const router = useRouter();
+  const clientRef = useRef(generateClient<Schema>({ authMode: "apiKey" }));
+  const client = clientRef.current;
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
   useEffect(() => {

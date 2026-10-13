@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Authenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/data";
@@ -8,7 +8,8 @@ import type { Schema } from "@/amplify/data/resource";
 import CategoryBadge from "@/app/components/CategoryBadge";
 import styles from "./page.module.css";
 
-const client = generateClient<Schema>();
+// NOTE: client is created inside AdminDashboard (not at module scope) so it
+// is instantiated after Amplify.configure() has run in AmplifyProvider.
 
 type Project = Schema["Project"]["type"];
 type CategoryValue = Parameters<typeof CategoryBadge>[0]["category"];
@@ -19,6 +20,9 @@ interface ProjectRow {
 }
 
 function AdminDashboard() {
+  const clientRef = useRef(generateClient<Schema>({ authMode: "userPool" }));
+  const client = clientRef.current;
+
   const [rows, setRows] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import ProjectCard from "@/app/components/ProjectCard";
 import styles from "./page.module.css";
 
-// Public pages use apiKey auth mode so unauthenticated visitors can read
-// projects/photos (the schema grants allow.guest().to(['read']) via apiKey).
-const client = generateClient<Schema>({ authMode: "apiKey" });
+// NOTE: client is created inside the component (not at module scope) so it
+// is instantiated after Amplify.configure() has run in AmplifyProvider.
 
 type Project = Schema["Project"]["type"];
 
@@ -42,6 +41,8 @@ const FILTER_OPTIONS: CategoryFilter[] = [
 ];
 
 export default function HomePage() {
+  const clientRef = useRef(generateClient<Schema>({ authMode: "apiKey" }));
+  const client = clientRef.current;
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>("ALL");

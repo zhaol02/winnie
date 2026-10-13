@@ -9,7 +9,8 @@ import type { Schema } from "@/amplify/data/resource";
 import UploadProgressItem, { UploadStatus } from "@/app/components/UploadProgressItem";
 import styles from "./page.module.css";
 
-const client = generateClient<Schema>({ authMode: "userPool" });
+// NOTE: client is intentionally created inside UploadForm (not at module scope)
+// so that it is created after Amplify.configure() has run in AmplifyProvider.
 
 type CategoryValue =
   | "BATHROOM"
@@ -40,6 +41,12 @@ type Project = Schema["Project"]["type"];
 function UploadForm() {
   const searchParams = useSearchParams();
   const prefilledProjectId = searchParams.get("projectId");
+
+  // Create client inside the component so it is instantiated after
+  // Amplify.configure() has run — module-scope clients have no auth tokens.
+  // useRef keeps it stable across re-renders without recreating on every render.
+  const clientRef = useRef(generateClient<Schema>({ authMode: "userPool" }));
+  const client = clientRef.current;
 
   const [mode, setMode] = useState<"existing" | "new">(
     prefilledProjectId ? "existing" : "new"
