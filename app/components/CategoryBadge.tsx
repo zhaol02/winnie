@@ -27,7 +27,7 @@ export default function CategoryBadge({ category }: CategoryBadgeProps) {
   if (!category) return null;
   const label = LABEL_MAP[category] ?? category;
   return (
-    <span className={`${styles.badge} ${styles[category.toLowerCase().replace("_", "")] ?? ""}`}>
+    <span className={`${styles.badge} ${styles[category.toLowerCase().replace(/_/g, "")] ?? ""}`}>
       {label}
     </span>
   );
