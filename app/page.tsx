@@ -42,7 +42,9 @@ const FILTER_OPTIONS: CategoryFilter[] = [
 
 export default function HomePage() {
   const clientRef = useRef(generateClient<Schema>({ authMode: "apiKey" }));
+  const clientUserPoolRef = useRef(generateClient<Schema>({ authMode: "userPool" }));
   const client = clientRef.current;
+  const clientUserPool = clientUserPoolRef.current;
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<CategoryFilter>("ALL");
@@ -53,7 +55,14 @@ export default function HomePage() {
       try {
         const { data, errors } = await client.models.Project.list();
         console.log("[Home] Project.list result:", data?.length, "items, errors:", errors);
-        if (!cancelled) setProjects(data ?? []);
+        if (errors?.length && !data?.length) {
+          // apiKey failed — try userPool (works for signed-in users)
+          console.warn("[Home] apiKey failed, retrying with userPool");
+          const { data: data2 } = await clientUserPool.models.Project.list();
+          if (!cancelled) setProjects(data2 ?? []);
+        } else {
+          if (!cancelled) setProjects(data ?? []);
+        }
       } catch (err) {
         console.error("[Home] Project.list error:", err);
       } finally {
