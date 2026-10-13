@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Amplify backend: replace the Todo-only schema with Project+Photo models, add S3 storage resource, wire everything into backend.ts, and update app-level Amplify configuration. This is the foundation — FEAT-002 and FEAT-003 both depend on the types exported from this feature.",
+  "status": "completed",
+  "steps": [
+    "Replace amplify/data/resource.ts: remove the Todo model; add a Category enum (BATHROOM | KITCHEN | LIVING_ROOM | BEDROOM | EXTERIOR | OTHER); add Project model (customerName: required string, address: optional string, category: Category enum ref, description: optional string, photos: hasMany Photo); add Photo model (projectId: required string, s3Key: required string, caption: optional string, order: optional integer, project: belongsTo Project). Authorization: Project uses allow.authenticated() for mutations and allow.guest().to(['read']) for public listing; Photo uses the same rules. Keep the existing apiKey authorization mode for backward compatibility during development but add userPool as the default auth mode so authenticated mutations work.",
+    "Create amplify/storage/resource.ts: use defineStorage({ name: 'winniepro-photos', access: (allow) => ({ 'photos/*': [allow.authenticated.to(['read','write','delete']), allow.guest.to(['read'])] }) }). The single 'photos/*' path covers all uploads; individual files will be keyed as 'photos/{projectId}/{uuid}.{ext}'.",
+    "Update amplify/backend.ts: import the new storage resource and add it to the defineBackend call alongside auth and data.",
+    "Update app/layout.tsx: move Amplify.configure(outputs) here (in a 'use client' wrapper component called AmplifyProvider, created at app/components/AmplifyProvider.tsx) so every page has Amplify initialized. Remove Amplify.configure from app/page.tsx. Import outputs conditionally with a try/catch so the build does not break before amplify_outputs.json is generated (outputs file may not exist at build time in CI — use a placeholder-safe pattern).",
+    "Create app/components/AmplifyProvider.tsx: a 'use client' component that calls Amplify.configure(outputs) once and renders children. Accept children: React.ReactNode. Import outputs from '@/amplify_outputs.json' with a try/catch guard. Export as default."
+  ],
+  "acceptance_criteria": [
+    "npm run build completes without TypeScript errors after this FEAT",
+    "npm run lint reports 0 errors",
+    "amplify/data/resource.ts exports a Schema type that includes Project and Photo models with the correct field types",
+    "amplify/storage/resource.ts exports a storage definition named 'winniepro-photos'",
+    "amplify/backend.ts passes storage to defineBackend",
+    "app/components/AmplifyProvider.tsx exists and wraps children with Amplify.configure"
+  ],
+  "verification": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": "All acceptance criteria met. Deviations from plan: (1) AmplifyProvider uses a runtime fetch('/amplify_outputs.json') pattern instead of a static try/catch import — the static import approach caused webpack/TypeScript build failures because amplify_outputs.json is gitignored and absent at build time; the fetch approach defers resolution to runtime, which is safe for SSR. (2) ESLint and eslint-config-next were not in the original package.json and were added at eslint@8 + eslint-config-next@14.2.10 to match the Next.js 14 version. A .eslintrc.json with 'next/core-web-vitals' was created. (3) defaultAuthorizationMode set to 'userPool' as specified; apiKey mode retained for backward compatibility."
+}
