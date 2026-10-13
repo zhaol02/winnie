@@ -9,7 +9,7 @@ import type { Schema } from "@/amplify/data/resource";
 import UploadProgressItem, { UploadStatus } from "@/app/components/UploadProgressItem";
 import styles from "./page.module.css";
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>({ authMode: "userPool" });
 
 type CategoryValue =
   | "BATHROOM"
@@ -127,15 +127,29 @@ function UploadForm() {
       let projectId = selectedProjectId;
 
       if (mode === "new") {
-        const { data: newProject, errors } = await client.models.Project.create({
-          customerName: customerName.trim(),
-          address: address.trim() || undefined,
-          category,
-          description: description.trim() || undefined,
-        });
+        let newProject: Awaited<ReturnType<typeof client.models.Project.create>>["data"] | undefined;
+        let errors: Awaited<ReturnType<typeof client.models.Project.create>>["errors"] | undefined;
+        try {
+          const result = await client.models.Project.create({
+            customerName: customerName.trim(),
+            address: address.trim() || undefined,
+            category,
+            description: description.trim() || undefined,
+          });
+          newProject = result.data ?? undefined;
+          errors = result.errors;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          setFormError(`Failed to create project: ${msg}`);
+          setFiles((prev) => prev.map((f) => ({ ...f, status: "error" as UploadStatus, errorMessage: msg })));
+          setUploading(false);
+          return;
+        }
 
-        if (errors || !newProject) {
-          setFormError("Failed to create project. Please try again.");
+        if (errors?.length || !newProject) {
+          const msg = errors?.map((e: { message: string }) => e.message).join(", ") ?? "Unknown error";
+          setFormError(`Failed to create project: ${msg}`);
+          setFiles((prev) => prev.map((f) => ({ ...f, status: "error" as UploadStatus, errorMessage: msg })));
           setUploading(false);
           return;
         }
@@ -214,6 +228,14 @@ function UploadForm() {
           `${files.length} photo${files.length > 1 ? "s" : ""} uploaded successfully!`
         );
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setFormError(`Upload error: ${msg}`);
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.status === "pending" ? { ...f, status: "error" as UploadStatus, errorMessage: msg } : f
+        )
+      );
     } finally {
       setUploading(false);
     }
