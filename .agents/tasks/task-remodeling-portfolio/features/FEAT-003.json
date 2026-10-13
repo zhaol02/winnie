@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Auth-gated pages: Upload page (mobile-first multi-image uploader) and Admin dashboard (project list with delete). Both wrapped with the Amplify Authenticator component from @aws-amplify/ui-react. Depends on FEAT-001 for Schema types and storage. Independent of FEAT-002's visual components (upload/admin have their own styles).",
+  "status": "completed",
+  "steps": [
+    "Create app/upload/page.tsx and app/upload/page.module.css: 'use client' page wrapped in <Authenticator>. Form fields: Customer Name (required text input), Address (optional text input), Category (required <select> with all 6 enum options), Description (optional textarea). Project selector: on load, fetch existing projects via client.models.Project.list() and show a 'Select existing project' dropdown plus a 'Create new project' toggle. File input: accept='image/jpeg,image/png,image/heic,image/heif' multiple. On file selection, show thumbnail previews in a 2-column grid (use URL.createObjectURL). Upload button triggers: (1) create Project record if new, (2) for each file call uploadData({ path: `photos/${projectId}/${uuid}.${ext}`, data: file, options: { onProgress } }) from 'aws-amplify/storage', (3) after each upload completes create a Photo record with the s3Key and order=index. Show per-file progress bars. Show success/error state per file. Mobile-first: large touch targets (min 44px), full-width inputs, sticky upload button at bottom.",
+    "Create app/components/UploadProgressItem.tsx and app/components/UploadProgressItem.module.css: shows thumbnail, filename, a progress bar (0-100%), and a status icon (spinner / checkmark / error). Accept props: file (File), progress (number), status ('pending'|'uploading'|'done'|'error'), errorMessage (string optional).",
+    "Create app/admin/page.tsx and app/admin/page.module.css: 'use client' page wrapped in <Authenticator>. Fetches all projects with photo count (list projects, then for each project list photos and count them — or use a batched approach). Renders a table/card list per project: customer name, category badge, address, photo count, 'Add Photos' link (→ /upload with ?projectId=X pre-filled), 'Delete' button. Delete: show a window.confirm() dialog, then call client.models.Photo.delete() for each photo in the project (list first), then call client.models.Project.delete(). Refresh list after delete. Show loading state while fetching.",
+    "Update app/upload/page.tsx to read ?projectId= from URL search params (useSearchParams) and pre-select that project in the existing-project dropdown if present — supports the 'Add Photos' link from admin.",
+    "Add @aws-amplify/ui-react/styles.css import to app/layout.tsx (it is already installed at ^6.5.5 — just needs the CSS import so the Authenticator widget is styled correctly)."
+  ],
+  "acceptance_criteria": [
+    "npm run build completes without errors",
+    "npm run lint reports 0 errors",
+    "app/upload/page.tsx exists, imports Authenticator from @aws-amplify/ui-react, and contains the upload form",
+    "app/admin/page.tsx exists, imports Authenticator from @aws-amplify/ui-react, and renders project list with delete",
+    "UploadProgressItem component exists with progress bar and status icon",
+    "Upload page reads projectId from URL query param"
+  ],
+  "verification": [
+    "npm run lint",
+    "npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": "All steps implemented. app/upload/page.tsx: Authenticator-wrapped mobile-first upload form with existing/new project toggle, multi-file picker, per-file UploadProgressItem progress bars, sticky upload button, and useSearchParams to pre-select projectId from URL. app/admin/page.tsx: Authenticator-wrapped dashboard listing all projects with photo counts, CategoryBadge, Add Photos link, and Delete (confirm → delete Photos then Project). S3 objects intentionally not deleted (v1, documented in code comment). UploadProgressItem component with HEIC fallback thumbnail. @aws-amplify/ui-react/styles.css added to layout.tsx. npm run lint: 0 errors. npm run build: compiled successfully."
+}

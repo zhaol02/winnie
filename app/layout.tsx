@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "@aws-amplify/ui-react/styles.css";
 import AmplifyProvider from "@/app/components/AmplifyProvider";
 import NavBar from "@/app/components/NavBar";
 
