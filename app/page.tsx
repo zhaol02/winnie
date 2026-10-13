@@ -51,7 +51,8 @@ export default function HomePage() {
     let cancelled = false;
     async function load() {
       try {
-        const { data } = await client.models.Project.list();
+        const { data, errors } = await client.models.Project.list();
+        console.log("[Home] Project.list result:", data?.length, "items, errors:", errors);
         if (!cancelled) setProjects(data ?? []);
       } catch (err) {
         console.error("[Home] Project.list error:", err);

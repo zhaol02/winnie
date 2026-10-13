@@ -32,7 +32,8 @@ function AdminDashboard() {
     setLoading(true);
     setError("");
     try {
-      const { data: projects } = await client.models.Project.list();
+      const { data: projects, errors } = await client.models.Project.list();
+      console.log("[Admin] Project.list result:", projects?.length, "items, errors:", errors);
       if (!projects) {
         setRows([]);
         return;
