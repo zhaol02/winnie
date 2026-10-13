@@ -156,20 +156,28 @@ function UploadForm() {
         projectId = newProject.id;
       }
 
+      // Guard: never upload without a valid project
+      if (!projectId) {
+        setFormError("No project selected or created. Please try again.");
+        setUploading(false);
+        return;
+      }
+
       // Upload each file
       const updatedFiles = [...files];
       for (let i = 0; i < files.length; i++) {
         const { file } = files[i];
         const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
         const uuid = crypto.randomUUID();
-        const path = `photos/${projectId}/${uuid}.${ext}`;
+        const s3Path = `photos/${projectId}/${uuid}.${ext}`;
 
         updatedFiles[i] = { ...updatedFiles[i], status: "uploading", progress: 0 };
         setFiles([...updatedFiles]);
 
         try {
+          // Step 1: upload to S3
           await uploadData({
-            path,
+            path: s3Path,
             data: file,
             options: {
               onProgress: ({ transferredBytes, totalBytes }) => {
@@ -186,40 +194,45 @@ function UploadForm() {
               },
             },
           }).result;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "S3 upload failed";
+          updatedFiles[i] = { ...updatedFiles[i], status: "error", errorMessage: `S3 error: ${msg}` };
+          setFiles([...updatedFiles]);
+          continue;
+        }
 
-          // Create Photo record in DynamoDB
-          await client.models.Photo.create({
+        // Step 2: save Photo record in DynamoDB
+        try {
+          const { errors: photoErrors } = await client.models.Photo.create({
             projectId,
-            s3Key: path,
+            s3Key: s3Path,
             order: i,
           });
-
-          // Increment the denormalized photoCount on the Project so the
-          // admin dashboard can display counts without N+1 Photo.list queries.
-          try {
-            const { data: proj } = await client.models.Project.get({ id: projectId });
-            if (proj) {
-              await client.models.Project.update({
-                id: projectId,
-                photoCount: (proj.photoCount ?? 0) + 1,
-              });
-            }
-          } catch {
-            // Non-critical — the photo was uploaded; counter will be off but
-            // the admin page falls back gracefully.
+          if (photoErrors?.length) {
+            throw new Error(photoErrors.map((e: { message: string }) => e.message).join(", "));
           }
-
-          updatedFiles[i] = { ...updatedFiles[i], progress: 100, status: "done" };
-          setFiles([...updatedFiles]);
         } catch (err) {
-          const msg = err instanceof Error ? err.message : "Upload failed";
-          updatedFiles[i] = {
-            ...updatedFiles[i],
-            status: "error",
-            errorMessage: msg,
-          };
+          const msg = err instanceof Error ? err.message : "Failed to save photo record";
+          updatedFiles[i] = { ...updatedFiles[i], status: "error", errorMessage: `DB error: ${msg}` };
           setFiles([...updatedFiles]);
+          continue;
         }
+
+        // Step 3: increment photoCount (non-critical, best effort)
+        try {
+          const { data: proj } = await client.models.Project.get({ id: projectId });
+          if (proj) {
+            await client.models.Project.update({
+              id: projectId,
+              photoCount: (proj.photoCount ?? 0) + 1,
+            });
+          }
+        } catch {
+          // Non-critical — photo is saved; counter may be off
+        }
+
+        updatedFiles[i] = { ...updatedFiles[i], progress: 100, status: "done" };
+        setFiles([...updatedFiles]);
       }
 
       const allDone = updatedFiles.every((f) => f.status === "done");
